@@ -236,3 +236,20 @@ footer ul a:hover{color:#fff}
   .hero h1{font-size:1.92rem}
   .foot-grid{grid-template-columns:1fr}
 }
+
+/* ===== mobile spacing v2 (more breathing room) ===== */
+@media(max-width:600px){
+  .wrap{padding:0 22px}
+  .hero-grid{padding:24px 0 48px}
+  .cov{padding:20px}
+  .card{padding:28px}
+  .pkg{padding:30px}
+  .sec{padding:54px 0}
+  .sec-head{margin-bottom:34px}
+  .grid-3{gap:18px}
+  .stats{gap:14px}
+  .stat{padding:22px}
+  .quote{padding:36px 24px}
+  .cta-final{padding:54px 26px}
+  .pkg-grid{gap:20px}
+}
