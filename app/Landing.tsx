@@ -90,7 +90,7 @@ export default function Landing({ content }: { content: Content }) {
 
       <header>
         <div className="wrap nav">
-          <a href="#" className="brand"><img src="/hifi-logo.svg" alt="hifi" style={{ height: 34, width: "auto", display: "block" }} /></a>
+          <a href="#" className="brand"><img src="/hifi-logo.svg" alt="indosat hifi" style={{ height: 38, width: "auto", display: "block" }} /></a>
           <nav className="nav-links">
             <a href="#paket">Paket</a>
             <a href="#coverage">Coverage</a>
@@ -306,7 +306,7 @@ export default function Landing({ content }: { content: Content }) {
         <div className="wrap">
           <div className="foot-grid">
             <div>
-              <a href="#" className="brand"><img src="/hifi-logo.svg" alt="hifi" style={{ height: 34, width: "auto", display: "block" }} /></a>
+              <a href="#" className="brand"><img src="/hifi-logo-light.svg" alt="indosat hifi" style={{ height: 38, width: "auto", display: "block" }} /></a>
               <p className="desc">Internet rumah fiber & 5G. Ngebut buat seisi rumah, tanpa drama.</p>
             </div>
             <div><h4>Produk</h4><ul>

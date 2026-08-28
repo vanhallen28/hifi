@@ -28,7 +28,7 @@ export default function LoginPage() {
   return (
     <div id="login">
       <div className="login-card">
-        <div className="brand"><img src="/hifi-logo.svg" alt="hifi" style={{ height: 34, width: "auto", display: "block" }} /></div>
+        <div className="brand"><img src="/hifi-logo.svg" alt="indosat hifi" style={{ height: 44, width: "auto", display: "block" }} /></div>
         <div className="tag">Panel Admin — kelola konten situs</div>
         <div className="field">
           <label>Email</label>
