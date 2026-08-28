@@ -266,6 +266,7 @@ footer ul a:hover{color:#fff}
   .card p{font-size:.93rem;line-height:1.5}
   .hero h1{font-size:clamp(1.95rem,7.6vw,2.4rem);padding-left:18px;padding-right:18px}
   .hero p.lead{padding-left:20px;padding-right:20px}
+  .cov{margin-left:14px;margin-right:14px}
 }
 @media(max-width:380px){
   .grid-3{grid-template-columns:1fr}
