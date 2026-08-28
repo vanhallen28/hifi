@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { wa } from "@/lib/wa";
+import { getContent } from "@/lib/data";
+import { createClient } from "@/lib/supabase/client";
 import type { Content } from "@/lib/types";
 
 /* ---------- icons ---------- */
@@ -32,9 +34,28 @@ const HL = ({ text, hl }: { text: string; hl: string }) => {
   return (<>{a}<span className="hl">{b}</span>{c}</>);
 };
 
-export default function Landing({ content }: { content: Content }) {
+export default function Landing({ content: initialContent }: { content: Content }) {
+  const [content, setContent] = useState(initialContent);
   const { hero, packages, settings, extra } = content;
   const waHref = (msg: string) => wa(settings.wa, msg);
+
+  // Ambil data live dari Supabase di browser, lalu update otomatis saat admin Publish (Realtime).
+  useEffect(() => {
+    let alive = true;
+    const refresh = () =>
+      getContent()
+        .then((c) => { if (alive) setContent(c); })
+        .catch(() => {});
+    refresh(); // fetch versi terbaru begitu halaman dibuka (lewati cache render)
+    const sb = createClient();
+    const channel = sb
+      .channel("public-content")
+      .on("postgres_changes", { event: "*", schema: "public", table: "hero" }, () => refresh())
+      .on("postgres_changes", { event: "*", schema: "public", table: "packages" }, () => refresh())
+      .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, () => refresh())
+      .subscribe();
+    return () => { alive = false; sb.removeChannel(channel); };
+  }, []);
 
   const [promoOpen, setPromoOpen] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
