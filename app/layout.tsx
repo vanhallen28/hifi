@@ -4,13 +4,29 @@ import Script from "next/script";
 
 const SITE_URL = "https://www.internetbandung.com";
 const GA_ID = "G-MGTZHHGK36";
-const FB_PIXEL_ID: string = "";   // isi Pixel ID Meta (15-16 digit). biarkan "" kalau belum ada.
+const FB_PIXEL_ID: string = "";   // isi Pixel ID Meta (15-16 digit). "" kalau belum ada.
 const GSC_CODE: string = "";       // isi kode verifikasi Search Console (metode HTML tag). "" kalau pakai DNS.
+
+const TITLE = "hifi — Internet rumah tanpa drama";
+const DESC = "Internet rumah fiber & 5G. Ngebut buat seisi rumah, tanpa drama. Cek coverage & langganan lewat WhatsApp.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "hifi — Internet rumah tanpa drama",
-  description: "Internet rumah fiber & 5G. Ngebut buat seisi rumah, tanpa drama.",
+  title: TITLE,
+  description: DESC,
+  openGraph: {
+    title: TITLE,
+    description: DESC,
+    url: SITE_URL,
+    siteName: "hifi",
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESC,
+  },
   ...(GSC_CODE ? { verification: { google: GSC_CODE } } : {}),
 };
 
