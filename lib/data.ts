@@ -1,10 +1,24 @@
 import { createClient } from "@supabase/supabase-js";
 import { DEFAULT_CONTENT } from "./defaults";
-import type { Content } from "./types";
+import type { Content, Extra } from "./types";
 
 type HeroRow = { badge: string; headline: string; highlight: string; subheadline: string; cta_label: string };
 type PkgRow = { name: string; speed: string; is_popular: boolean; price_1: number; price_6: number; price_12: number; features: string[] | null };
-type SettingsRow = { wa_number: string; promo_text: string; hours: string };
+type SettingsRow = { wa_number: string; promo_text: string; hours: string; data: unknown };
+
+const isObj = (x: unknown): x is Record<string, unknown> =>
+  !!x && typeof x === "object" && !Array.isArray(x);
+
+function deepMerge<T>(base: T, over: unknown): T {
+  if (!isObj(base) || !isObj(over)) return over === undefined ? base : (over as T);
+  const out: Record<string, unknown> = { ...(base as Record<string, unknown>) };
+  for (const k of Object.keys(over)) {
+    const b = (base as Record<string, unknown>)[k];
+    const o = (over as Record<string, unknown>)[k];
+    out[k] = isObj(b) && isObj(o) ? deepMerge(b, o) : (o === undefined ? b : o);
+  }
+  return out as T;
+}
 
 export async function getContent(): Promise<Content> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -34,6 +48,7 @@ export async function getContent(): Promise<Content> {
       settings: settings
         ? { wa: settings.wa_number, promo: settings.promo_text, hours: settings.hours }
         : DEFAULT_CONTENT.settings,
+      extra: deepMerge<Extra>(DEFAULT_CONTENT.extra, settings?.data ?? {}),
     };
   } catch {
     return DEFAULT_CONTENT;

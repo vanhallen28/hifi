@@ -1,75 +1,61 @@
 "use client";
 
 import { useState } from "react";
-import type { Content } from "@/lib/types";
 import { wa } from "@/lib/wa";
+import type { Content } from "@/lib/types";
 
-/* ---------- icons (line = stroke, filled = fill) ---------- */
-const IcWA = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" /></svg>
-);
-const IcPin = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-);
-const IcSearch = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-);
-const IcCheck = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-);
-const IcZap = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" /></svg>
-);
-const IcWifi = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0" /><path d="M1.42 9a16 16 0 0 1 21.16 0" /><path d="M8.53 16.11a6 6 0 0 1 6.95 0" /><line x1="12" y1="20" x2="12" y2="20" /></svg>
-);
-const IcShield = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-);
-const IcHeadset = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" /></svg>
-);
-const IcStar = () => (
-  <svg viewBox="0 0 24 24"><path d="M12 2 15 9l7 .5-5.5 4.5L18 21l-6-3.8L6 21l1.5-7L2 9.5 9 9z" /></svg>
-);
-const IcWAFilled = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.3A7.85 7.85 0 0 0 12 4a7.94 7.94 0 0 0-6.9 11.9L4 20l4.2-1.1A7.9 7.9 0 0 0 12 20a7.95 7.95 0 0 0 5.6-13.7zM12 18.5a6.5 6.5 0 0 1-3.4-.9l-.24-.15-2.5.65.67-2.43-.16-.25A6.5 6.5 0 1 1 12 18.5zm3.6-4.9c-.2-.1-1.17-.58-1.35-.64s-.31-.1-.44.1-.5.63-.62.76-.23.15-.43.05a5.3 5.3 0 0 1-1.56-.96 5.9 5.9 0 0 1-1.08-1.35c-.11-.2 0-.3.09-.4l.3-.35a1.35 1.35 0 0 0 .2-.33.37.37 0 0 0 0-.35c0-.1-.44-1.06-.6-1.45s-.32-.33-.44-.34h-.38a.72.72 0 0 0-.52.24 2.2 2.2 0 0 0-.68 1.63 3.83 3.83 0 0 0 .8 2.03 8.75 8.75 0 0 0 3.35 2.96 11.2 11.2 0 0 0 1.12.41 2.7 2.7 0 0 0 1.24.08 2 2 0 0 0 1.32-.93 1.65 1.65 0 0 0 .11-.93c-.04-.09-.16-.14-.36-.24z" /></svg>
-);
+/* ---------- icons ---------- */
+const IcWA = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 0 1 12.6-11.3" /></svg>);
+const IcPin = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>);
+const IcSearch = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>);
+const IcCheck = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>);
+const IcZap = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z" /></svg>);
+const IcWifi = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14 0M2 8.82a16 16 0 0 1 20 0M8.5 16.4a6 6 0 0 1 7 0" /><path d="M12 20h.01" /></svg>);
+const IcShield = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>);
+const IcHeadset = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" /></svg>);
+const IcStar = () => (<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.9 7.5.6-5.7 4.9 1.8 7.3L12 17.8 5.6 21.7l1.8-7.3L1.7 9.5l7.5-.6z" /></svg>);
+const IcWAFilled = () => (<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8 0-1.3.7-2 .9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.2.2-.3.4-.1.7.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.2.5.3.1.2.1.6-.1 1.1z" /></svg>);
 
-const CITIES = ["Jakarta","Bandung","Surabaya","Semarang","Yogyakarta","Bekasi","Depok","Tangerang","Bogor","Malang","Medan","Denpasar"];
+const ICONS: { [k: string]: () => JSX.Element } = { zap: IcZap, wifi: IcWifi, shield: IcShield, headset: IcHeadset, star: IcStar, pin: IcPin, check: IcCheck, wa: IcWA };
 const rupiah = (n: number) => "Rp" + (Number(n) || 0).toLocaleString("id-ID");
+const isExt = (u: string) => /^https?:/i.test(u || "");
+
+function splitHl(text: string, hl: string) {
+  const t = text || ""; const k = (hl || "").trim();
+  if (!k) return [t, "", ""] as const;
+  const i = t.toLowerCase().indexOf(k.toLowerCase());
+  if (i < 0) return [t, "", ""] as const;
+  return [t.slice(0, i), t.slice(i, i + k.length), t.slice(i + k.length)] as const;
+}
+const HL = ({ text, hl }: { text: string; hl: string }) => {
+  const [a, b, c] = splitHl(text, hl);
+  return (<>{a}<span className="hl">{b}</span>{c}</>);
+};
 
 export default function Landing({ content }: { content: Content }) {
-  const { hero, packages, settings } = content;
+  const { hero, packages, settings, extra } = content;
+  const waHref = (msg: string) => wa(settings.wa, msg);
+
   const [promoOpen, setPromoOpen] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cov, setCov] = useState("");
   const [city, setCity] = useState("");
   const [dur, setDur] = useState<1 | 6 | 12>(1);
 
-  const waHref = (msg: string) => wa(settings.wa, msg);
   const cekCoverage = () => {
     const v = cov.trim();
     const msg = v
-      ? `Halo hifi! Saya mau cek coverage untuk area: ${v}. Apakah sudah terjangkau?`
-      : "Halo hifi! Saya mau cek coverage area rumah saya.";
+      ? `Halo hifi! Saya mau cek coverage untuk: ${v}. Bisa dibantu?`
+      : "Halo hifi! Saya mau cek ketersediaan area & info berlangganan.";
     window.open(waHref(msg), "_blank");
   };
   const cekKota = (val: string) => {
     const v = (val || "").trim();
     const msg = v
-      ? `Halo hifi! Saya di ${v}, mau cek coverage & paket yang tersedia.`
-      : "Halo hifi! Saya mau cek coverage & paket di kota saya.";
+      ? `Halo hifi! Saya mau cek coverage di ${v}. Sudah tersedia?`
+      : "Halo hifi! Saya mau cek ketersediaan area.";
     window.open(waHref(msg), "_blank");
   };
-
-  const headParts = (() => {
-    const h = hero.head; const hl = (hero.hl || "").trim();
-    if (!hl) return [h, "", ""] as const;
-    const i = h.toLowerCase().indexOf(hl.toLowerCase());
-    if (i < 0) return [h, "", ""] as const;
-    return [h.slice(0, i), h.slice(i, i + hl.length), h.slice(i + hl.length)] as const;
-  })();
 
   return (
     <>
@@ -123,9 +109,7 @@ export default function Landing({ content }: { content: Content }) {
         <div className="wrap hero-grid">
           <div className="hero-copy">
             <span className="eyebrow rv" style={{ animationDelay: ".05s" }}>{hero.badge}</span>
-            <h1 className="rv" style={{ animationDelay: ".12s" }}>
-              {headParts[0]}<span className="hl">{headParts[1]}</span>{headParts[2]}
-            </h1>
+            <h1 className="rv" style={{ animationDelay: ".12s" }}><HL text={hero.head} hl={hero.hl} /></h1>
             <p className="lead rv" style={{ animationDelay: ".2s" }}>{hero.sub}</p>
 
             <div className="cov rv" style={{ animationDelay: ".28s" }}>
@@ -142,9 +126,7 @@ export default function Landing({ content }: { content: Content }) {
             </div>
 
             <div className="trust rv" style={{ animationDelay: ".36s" }}>
-              <span className="chip"><IcCheck /> 25+ kota</span>
-              <span className="chip"><IcCheck /> 100% fiber</span>
-              <span className="chip"><IcCheck /> pasang gratis</span>
+              {extra.trust.map((t, i) => (<span className="chip" key={i}><IcCheck /> {t}</span>))}
             </div>
           </div>
 
@@ -177,14 +159,16 @@ export default function Landing({ content }: { content: Content }) {
       <section className="sec" id="kenapa">
         <div className="wrap">
           <div className="sec-head">
-            <span className="eyebrow">Kenapa hifi</span>
-            <h2 style={{ marginTop: "14px" }}>Cepat, stabil, dan <span className="hl">tanpa drama</span></h2>
+            <span className="eyebrow">{extra.benefits.eyebrow}</span>
+            <h2 style={{ marginTop: "14px" }}><HL text={extra.benefits.title} hl={extra.benefits.hl} /></h2>
           </div>
           <div className="grid-3">
-            <div className="card"><div className="ic"><IcZap /></div><h3>Tanpa FUP</h3><p>Kecepatan stabil 24 jam, tanpa pembatasan kuota di tengah jalan.</p></div>
-            <div className="card"><div className="ic"><IcWifi /></div><h3>Fiber sampai rumah</h3><p>Jaringan 100% fiber optic — latency rendah, cocok buat gaming & kerja.</p></div>
-            <div className="card"><div className="ic"><IcShield /></div><h3>Pasang gratis</h3><p>Instalasi & router Wi-Fi 6 sudah termasuk. Tinggal colok, langsung ngebut.</p></div>
-            <div className="card"><div className="ic"><IcHeadset /></div><h3>Support 24/7</h3><p>Ada kendala? Chat WhatsApp kami kapan aja, dibantu tim yang ramah.</p></div>
+            {extra.benefits.items.map((b, i) => {
+              const Icon = ICONS[b.icon] || IcZap;
+              return (
+                <div className="card" key={i}><div className="ic"><Icon /></div><h3>{b.title}</h3><p>{b.desc}</p></div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -193,9 +177,9 @@ export default function Landing({ content }: { content: Content }) {
       <section className="sec pkg-wrap" id="paket">
         <div className="wrap">
           <div className="sec-head center">
-            <span className="eyebrow">Pilih paket</span>
-            <h2 style={{ marginTop: "14px" }}>Satu harga, semua <span className="hl">ngebut</span></h2>
-            <p className="sec-sub">Makin lama durasi, makin hemat per bulannya.</p>
+            <span className="eyebrow">{extra.packagesHead.eyebrow}</span>
+            <h2 style={{ marginTop: "14px" }}><HL text={extra.packagesHead.title} hl={extra.packagesHead.hl} /></h2>
+            <p className="sec-sub">{extra.packagesHead.sub}</p>
           </div>
           <div style={{ textAlign: "center" }}>
             <div className="tabs">
@@ -230,14 +214,13 @@ export default function Landing({ content }: { content: Content }) {
       <section className="sec" id="cara">
         <div className="wrap">
           <div className="sec-head">
-            <span className="eyebrow">Cara berlangganan</span>
-            <h2 style={{ marginTop: "14px" }}>Cuma <span className="hl">4 langkah</span></h2>
+            <span className="eyebrow">{extra.steps.eyebrow}</span>
+            <h2 style={{ marginTop: "14px" }}><HL text={extra.steps.title} hl={extra.steps.hl} /></h2>
           </div>
           <div className="steps">
-            <div className="step"><div className="num">1</div><h3>Cek coverage</h3><p>Ketik alamatmu, kami cek ketersediaan lewat WhatsApp.</p></div>
-            <div className="step"><div className="num">2</div><h3>Pilih paket</h3><p>Tentukan kecepatan & durasi yang paling pas buat rumah.</p></div>
-            <div className="step"><div className="num">3</div><h3>Konfirmasi & data</h3><p>Kirim data pemasangan lewat chat — dibantu tim kami.</p></div>
-            <div className="step"><div className="num">4</div><h3>Pemasangan</h3><p>Teknisi datang, pasang, dan rumahmu langsung online.</p></div>
+            {extra.steps.items.map((s, i) => (
+              <div className="step" key={i}><div className="num">{i + 1}</div><h3>{s.title}</h3><p>{s.desc}</p></div>
+            ))}
           </div>
         </div>
       </section>
@@ -246,9 +229,9 @@ export default function Landing({ content }: { content: Content }) {
       <section className="sec cov-sec" id="coverage">
         <div className="wrap">
           <div className="sec-head center">
-            <span className="eyebrow">Coverage area</span>
-            <h2 style={{ marginTop: "14px" }}>Sudah hadir di <span className="hl">kota kamu?</span></h2>
-            <p className="sec-sub">Ketik kota atau pilih dari daftar — kami cek langsung via WhatsApp.</p>
+            <span className="eyebrow">{extra.coverage.eyebrow}</span>
+            <h2 style={{ marginTop: "14px" }}><HL text={extra.coverage.title} hl={extra.coverage.hl} /></h2>
+            <p className="sec-sub">{extra.coverage.sub}</p>
           </div>
           <div className="city-search">
             <div className="cov-input" style={{ flex: 1 }}>
@@ -260,9 +243,9 @@ export default function Landing({ content }: { content: Content }) {
             <button className="btn btn-primary" onClick={() => cekKota(city)}>Cek</button>
           </div>
           <div className="cities">
-            {CITIES.map((c) => (<button className="city" key={c} onClick={() => cekKota(c)}>{c}</button>))}
+            {extra.coverage.cities.map((c) => (<button className="city" key={c} onClick={() => cekKota(c)}>{c}</button>))}
           </div>
-          <p className="cov-note">Kota kamu belum ada? <a target="_blank" rel="noopener"
+          <p className="cov-note">{extra.coverage.note} <a target="_blank" rel="noopener"
             href={waHref("Halo hifi! Kota saya belum ada di daftar coverage. Boleh info kalau sudah tersedia?")}>Chat kami, nanti dikabari</a></p>
         </div>
       </section>
@@ -271,15 +254,12 @@ export default function Landing({ content }: { content: Content }) {
       <section className="sec" id="bantuan">
         <div className="wrap">
           <div className="stats">
-            <div className="stat"><b>25+</b><span>kota terlayani</span></div>
-            <div className="stat"><b>10rb+</b><span>rumah terhubung</span></div>
-            <div className="stat"><b>99,9%</b><span>uptime jaringan</span></div>
-            <div className="stat"><b>4,8/5</b><span>rating pelanggan</span></div>
+            {extra.stats.map((s, i) => (<div className="stat" key={i}><b>{s.value}</b><span>{s.label}</span></div>))}
           </div>
           <div className="quote">
             <div className="stars"><IcStar /><IcStar /><IcStar /><IcStar /><IcStar /></div>
-            <p>&quot;Pindah ke hifi, kerja dari rumah jadi lancar banget. Pasangnya cepat dan CS-nya responsif via WhatsApp.&quot;</p>
-            <div className="who">— Placeholder pelanggan, [Kota]</div>
+            <p>&quot;{extra.testimonial.quote}&quot;</p>
+            <div className="who">{extra.testimonial.author}</div>
           </div>
         </div>
       </section>
@@ -290,8 +270,8 @@ export default function Landing({ content }: { content: Content }) {
           <div className="cta-final">
             <div className="blob a"></div><div className="blob b"></div>
             <div style={{ position: "relative", zIndex: 1 }}>
-              <h2>Siap internetan tanpa drama?</h2>
-              <p>Cek coverage area kamu sekarang — langsung dibantu tim kami lewat WhatsApp.</p>
+              <h2>{extra.cta.title}</h2>
+              <p>{extra.cta.sub}</p>
               <a className="btn btn-primary btn-lg" target="_blank" rel="noopener"
                 href={waHref("Halo hifi! Saya mau cek coverage & mulai berlangganan. Bisa dibantu?")}>
                 <IcWA /> Cek coverage via WhatsApp
@@ -307,26 +287,18 @@ export default function Landing({ content }: { content: Content }) {
           <div className="foot-grid">
             <div>
               <a href="#" className="brand"><img src="/hifi-logo-light.svg" alt="indosat hifi" style={{ height: 38, width: "auto", display: "block" }} /></a>
-              <p className="desc">Internet rumah fiber & 5G. Ngebut buat seisi rumah, tanpa drama.</p>
+              <p className="desc">{extra.footer.desc}</p>
             </div>
-            <div><h4>Produk</h4><ul>
-              <li><a href="#paket">Paket internet</a></li>
-              <li><a href="#coverage">Coverage area</a></li>
-              <li><a href="#cara">Cara berlangganan</a></li>
-            </ul></div>
-            <div><h4>Bantuan</h4><ul>
-              <li><a target="_blank" rel="noopener" href={waHref("Halo hifi! Saya mau tanya-tanya soal layanan.")}>Hubungi kami</a></li>
-              <li><a href="#">FAQ</a></li>
-              <li><a href="#">Lacak pemasangan</a></li>
-            </ul></div>
-            <div><h4>Kontak</h4><ul>
-              <li><a target="_blank" rel="noopener" href={waHref("Halo hifi!")}>WhatsApp</a></li>
-              <li><a href="#">Instagram</a></li>
-              <li><a href="#">Email</a></li>
-            </ul></div>
+            {extra.footer.cols.map((col, i) => (
+              <div key={i}><h4>{col.title}</h4><ul>
+                {col.links.map((l, k) => (
+                  <li key={k}><a href={l.url || "#"} {...(isExt(l.url) ? { target: "_blank", rel: "noopener" } : {})}>{l.label}</a></li>
+                ))}
+              </ul></div>
+            ))}
           </div>
           <div className="foot-bot">
-            <span>© 2026 hifi. Semua hak dilindungi.</span>
+            <span>{extra.footer.copyright}</span>
             <span><a href="#">Syarat & Ketentuan</a> · <a href="#">Kebijakan Privasi</a> · <a href="/admin">Admin</a></span>
           </div>
         </div>
