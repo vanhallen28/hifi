@@ -47,14 +47,20 @@ export default function Landing({ content: initialContent }: { content: Content 
         .then((c) => { if (alive) setContent(c); })
         .catch(() => {});
     refresh(); // fetch versi terbaru begitu halaman dibuka (lewati cache render)
-    const sb = createClient();
-    const channel = sb
-      .channel("public-content")
-      .on("postgres_changes", { event: "*", schema: "public", table: "hero" }, () => refresh())
-      .on("postgres_changes", { event: "*", schema: "public", table: "packages" }, () => refresh())
-      .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, () => refresh())
-      .subscribe();
-    return () => { alive = false; sb.removeChannel(channel); };
+    let cleanup = () => {};
+    try {
+      const sb = createClient();
+      const channel = sb
+        .channel("public-content")
+        .on("postgres_changes", { event: "*", schema: "public", table: "hero" }, () => refresh())
+        .on("postgres_changes", { event: "*", schema: "public", table: "packages" }, () => refresh())
+        .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, () => refresh())
+        .subscribe();
+      cleanup = () => { sb.removeChannel(channel); };
+    } catch {
+      /* Realtime opsional — kalau gagal, situs tetap jalan pakai data awal + refresh manual */
+    }
+    return () => { alive = false; cleanup(); };
   }, []);
 
   const [promoOpen, setPromoOpen] = useState(true);

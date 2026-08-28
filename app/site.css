@@ -253,3 +253,20 @@ footer ul a:hover{color:#fff}
   .cta-final{padding:54px 26px}
   .pkg-grid{gap:20px}
 }
+
+/* ===== mobile refine v3 (hero side-space + benefit 2 kolom) ===== */
+@media(max-width:900px){
+  .grid-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .grid-3{gap:14px}
+  .card{padding:22px}
+  .card .ic{width:46px;height:46px}
+  .card h3{font-size:1.05rem}
+  .card p{font-size:.93rem;line-height:1.5}
+  .hero h1{font-size:clamp(1.95rem,7.6vw,2.4rem);padding-left:18px;padding-right:18px}
+  .hero p.lead{padding-left:20px;padding-right:20px}
+}
+@media(max-width:380px){
+  .grid-3{grid-template-columns:1fr}
+}
