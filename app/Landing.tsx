@@ -103,7 +103,7 @@ export default function Landing({ content: initialContent }: { content: Content 
 
       <header>
         <div className="wrap nav">
-          <a href="#" className="brand"><img src="/hifi-logo.svg" alt="indosat hifi" style={{ height: 38, width: "auto", display: "block" }} /></a>
+          <a href="#" className="brand"><img src="/hifi-logo.svg" alt="indosat hifi fiber" style={{ height: 48, width: "auto", display: "block" }} /></a>
           <nav className="nav-links">
             <a href="#paket">Paket</a>
             <a href="#coverage">Coverage</a>
@@ -313,7 +313,7 @@ export default function Landing({ content: initialContent }: { content: Content 
         <div className="wrap">
           <div className="foot-grid">
             <div>
-              <a href="#" className="brand"><img src="/hifi-logo-light.svg" alt="indosat hifi" style={{ height: 38, width: "auto", display: "block" }} /></a>
+              <a href="#" className="brand"><img src="/hifi-logo-light.svg" alt="indosat hifi" style={{ height: 64, width: "auto", display: "block" }} /></a>
               <p className="desc">{extra.footer.desc}</p>
             </div>
             {extra.footer.cols.map((col, i) => (

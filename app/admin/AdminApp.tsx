@@ -122,7 +122,7 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
     <div id="app">
       <div className="layout">
         <aside className="side">
-          <div className="brand"><img src="/hifi-logo.svg" alt="indosat hifi" style={{ height: 32, width: "auto", display: "block" }} /></div>
+          <div className="brand"><img src="/hifi-logo.svg" alt="indosat hifi fiber" style={{ height: 44, width: "auto", display: "block" }} /></div>
           {navItem("home", <IcHome />, "Ringkasan")}
           {navItem("hero", <IcImage />, "Hero")}
           {navItem("paket", <IcTag />, "Paket & Harga")}
