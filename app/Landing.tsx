@@ -37,6 +37,7 @@ const HL = ({ text, hl }: { text: string; hl: string }) => {
 export default function Landing({ content: initialContent }: { content: Content }) {
   const [content, setContent] = useState(initialContent);
   const { hero, packages, settings, extra } = content;
+  const heroOverlay = extra.heroShowText || extra.heroShowWidget || extra.heroShowTrust;
   const waHref = (msg: string) => wa(settings.wa, msg);
 
   // Ambil data live dari Supabase di browser, lalu update otomatis saat admin Publish (Realtime).
@@ -69,7 +70,17 @@ export default function Landing({ content: initialContent }: { content: Content 
   const [city, setCity] = useState("");
   const [dur, setDur] = useState<1 | 6 | 12>(1);
 
+  // Lacak klik WhatsApp sebagai konversi (Google Analytics + Meta Pixel)
+  const trackWA = (source: string) => {
+    try {
+      const w = window as unknown as { gtag?: (...a: unknown[]) => void; fbq?: (...a: unknown[]) => void };
+      if (w.gtag) w.gtag("event", "generate_lead", { method: "whatsapp", source });
+      if (w.fbq) w.fbq("track", "Lead", { source });
+    } catch { /* abaikan */ }
+  };
+
   const cekCoverage = () => {
+    trackWA("hero-widget");
     const v = cov.trim();
     const msg = v
       ? `Halo hifi! Saya mau cek coverage untuk: ${v}. Bisa dibantu?`
@@ -77,6 +88,7 @@ export default function Landing({ content: initialContent }: { content: Content 
     window.open(waHref(msg), "_blank");
   };
   const cekKota = (val: string) => {
+    trackWA("coverage");
     const v = (val || "").trim();
     const msg = v
       ? `Halo hifi! Saya mau cek coverage di ${v}. Sudah tersedia?`
@@ -112,7 +124,7 @@ export default function Landing({ content: initialContent }: { content: Content 
           </nav>
           <div className="nav-cta">
             <a className="btn btn-ghost" href="#coverage">Lihat coverage</a>
-            <a className="btn btn-primary" target="_blank" rel="noopener"
+            <a className="btn btn-primary" target="_blank" rel="noopener" onClick={() => trackWA("nav")}
                href={waHref("Halo hifi! Saya mau cek ketersediaan area & info berlangganan.")}>
               <IcWA /> Cek coverage
             </a>
@@ -126,66 +138,52 @@ export default function Landing({ content: initialContent }: { content: Content 
           <a href="#coverage" onClick={() => setMenuOpen(false)}>Coverage</a>
           <a href="#cara" onClick={() => setMenuOpen(false)}>Cara berlangganan</a>
           <a href="#bantuan" onClick={() => setMenuOpen(false)}>Bantuan</a>
-          <a className="btn btn-primary" target="_blank" rel="noopener"
+          <a className="btn btn-primary" target="_blank" rel="noopener" onClick={() => trackWA("mobile-menu")}
              href={waHref("Halo hifi! Saya mau cek ketersediaan area & info berlangganan.")}>Cek coverage via WhatsApp</a>
         </div>
       </header>
 
       {/* HERO */}
-      <section className="hero">
-        <div className="wrap hero-grid">
-          <div className="hero-copy">
-            <span className="eyebrow rv" style={{ animationDelay: ".05s" }}>{hero.badge}</span>
-            <h1 className="rv" style={{ animationDelay: ".12s" }}><HL text={hero.head} hl={hero.hl} /></h1>
-            <p className="lead rv" style={{ animationDelay: ".2s" }}>{hero.sub}</p>
-
-            <div className="cov rv" style={{ animationDelay: ".28s" }}>
-              <label>Cek dulu — area kamu ke-cover?</label>
-              <div className="cov-row">
-                <div className="cov-input">
-                  <IcPin />
-                  <input type="text" placeholder="Ketik kota / alamat kamu…" value={cov}
-                    onChange={(e) => setCov(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") cekCoverage(); }} />
+      <section className={"hero hero-banner" + (heroOverlay ? " has-overlay" : "")}>
+        <img className="hero-photo" src={extra.heroImage || "/hero.jpg"} alt="" />
+        {heroOverlay && (
+          <div className="wrap hero-inner">
+            <div className="hero-copy">
+              {extra.heroShowText && (
+                <>
+                  <span className="eyebrow">{hero.badge}</span>
+                  <h1><HL text={hero.head} hl={hero.hl} /></h1>
+                  <p className="lead">{hero.sub}</p>
+                </>
+              )}
+              {extra.heroShowWidget && (
+                <div className="cov">
+                  <label>Cek dulu — area kamu ke-cover?</label>
+                  <div className="cov-row">
+                    <div className="cov-input">
+                      <IcPin />
+                      <input type="text" placeholder="Ketik kota / alamat kamu…" value={cov}
+                        onChange={(e) => setCov(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") cekCoverage(); }} />
+                    </div>
+                    <button className="btn btn-primary" onClick={cekCoverage}>{hero.cta}</button>
+                  </div>
                 </div>
-                <button className="btn btn-primary" onClick={cekCoverage}>{hero.cta}</button>
-              </div>
-            </div>
-
-            <div className="trust rv" style={{ animationDelay: ".36s" }}>
-              {extra.trust.map((t, i) => (<span className="chip" key={i}><IcCheck /> {t}</span>))}
+              )}
+              {extra.heroShowTrust && (
+                <div className="trust">
+                  {extra.trust.map((t, i) => (<span className="chip" key={i}><IcCheck /> {t}</span>))}
+                </div>
+              )}
             </div>
           </div>
-
-          <div className="hero-art rv" style={{ animationDelay: ".24s" }}>
-            <div className="blob a"></div><div className="blob b"></div>
-            <svg viewBox="0 0 460 460" style={{ position: "relative", zIndex: 1, width: "100%" }}>
-              <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#E6007E" /><stop offset="1" stopColor="#FF6A3D" /></linearGradient></defs>
-              <rect x="30" y="30" width="400" height="400" rx="40" fill="url(#hg)" />
-              <circle cx="110" cy="110" r="34" fill="#fff" opacity="0.12" />
-              <circle cx="380" cy="360" r="50" fill="#fff" opacity="0.10" />
-              <path d="M175 250 q55 -60 110 0" stroke="#fff" strokeWidth="7" fill="none" strokeLinecap="round" />
-              <path d="M155 224 q75 -80 150 0" stroke="#fff" strokeWidth="7" fill="none" strokeLinecap="round" opacity="0.8" />
-              <path d="M135 198 q95 -100 190 0" stroke="#fff" strokeWidth="6" fill="none" strokeLinecap="round" opacity="0.65" />
-              <line x1="205" y1="288" x2="192" y2="252" stroke="#fff" strokeWidth="7" strokeLinecap="round" />
-              <line x1="255" y1="288" x2="268" y2="252" stroke="#fff" strokeWidth="7" strokeLinecap="round" />
-              <rect x="148" y="288" width="164" height="76" rx="16" fill="#fff" />
-              <circle cx="172" cy="326" r="6.5" fill="#E6007E" /><circle cx="192" cy="326" r="6.5" fill="#FF6A3D" /><circle cx="212" cy="326" r="6.5" fill="#FFC24B" />
-              <rect x="236" y="320" width="56" height="10" rx="5" fill="#F2ECE7" />
-              <g fontFamily="Plus Jakarta Sans" fontWeight="800">
-                <rect x="70" y="150" width="126" height="46" rx="23" fill="#fff" /><text x="133" y="180" fontSize="21" fill="#E6007E" textAnchor="middle">500 Mbps</text>
-                <rect x="300" y="230" width="108" height="44" rx="22" fill="#fff" /><text x="354" y="259" fontSize="20" fill="#E6007E" textAnchor="middle">Wi-Fi 6</text>
-                <rect x="120" y="378" width="92" height="44" rx="22" fill="#fff" /><text x="166" y="407" fontSize="20" fill="#FF6A3D" textAnchor="middle">24/7</text>
-              </g>
-            </svg>
-          </div>
-        </div>
+        )}
       </section>
 
       {/* BENEFITS */}
       <section className="sec" id="kenapa">
         <div className="wrap">
-          <div className="sec-head">
+          <div className="sec-head center">
             <span className="eyebrow">{extra.benefits.eyebrow}</span>
             <h2 style={{ marginTop: "14px" }}><HL text={extra.benefits.title} hl={extra.benefits.hl} /></h2>
           </div>
@@ -228,8 +226,9 @@ export default function Landing({ content: initialContent }: { content: Content 
                   <div className="speed">{p.speed}</div>
                   <div className="old">{showOld ? `Rp${base.toLocaleString("id-ID")}/bln` : ""}</div>
                   <div className="price"><b>{rupiah(price)}</b><span>/bulan</span></div>
+                  <div className="ppn">Harga belum termasuk PPN 11%</div>
                   <ul>{p.features.map((f, i) => (<li key={i}><IcCheck /><span>{f}</span></li>))}</ul>
-                  <a className={"btn " + (p.pop ? "btn-primary" : "btn-ghost")} target="_blank" rel="noopener" href={waHref(msg)}>Langganan sekarang</a>
+                  <a className={"btn " + (p.pop ? "btn-primary" : "btn-ghost")} target="_blank" rel="noopener" onClick={() => trackWA("paket-" + p.name)} href={waHref(msg)}>Langganan sekarang</a>
                 </div>
               );
             })}
@@ -240,7 +239,7 @@ export default function Landing({ content: initialContent }: { content: Content 
       {/* STEPS */}
       <section className="sec" id="cara">
         <div className="wrap">
-          <div className="sec-head">
+          <div className="sec-head center">
             <span className="eyebrow">{extra.steps.eyebrow}</span>
             <h2 style={{ marginTop: "14px" }}><HL text={extra.steps.title} hl={extra.steps.hl} /></h2>
           </div>
@@ -272,7 +271,7 @@ export default function Landing({ content: initialContent }: { content: Content 
           <div className="cities">
             {extra.coverage.cities.map((c) => (<button className="city" key={c} onClick={() => cekKota(c)}>{c}</button>))}
           </div>
-          <p className="cov-note">{extra.coverage.note} <a target="_blank" rel="noopener"
+          <p className="cov-note">{extra.coverage.note} <a target="_blank" rel="noopener" onClick={() => trackWA("coverage-note")}
             href={waHref("Halo hifi! Kota saya belum ada di daftar coverage. Boleh info kalau sudah tersedia?")}>Chat kami, nanti dikabari</a></p>
         </div>
       </section>
@@ -299,7 +298,7 @@ export default function Landing({ content: initialContent }: { content: Content 
             <div style={{ position: "relative", zIndex: 1 }}>
               <h2>{extra.cta.title}</h2>
               <p>{extra.cta.sub}</p>
-              <a className="btn btn-primary btn-lg" target="_blank" rel="noopener"
+              <a className="btn btn-primary btn-lg" target="_blank" rel="noopener" onClick={() => trackWA("cta")}
                 href={waHref("Halo hifi! Saya mau cek coverage & mulai berlangganan. Bisa dibantu?")}>
                 <IcWA /> Cek coverage via WhatsApp
               </a>
@@ -307,6 +306,25 @@ export default function Landing({ content: initialContent }: { content: Content 
           </div>
         </div>
       </section>
+
+      {/* AWARDS */}
+      {extra.awards && extra.awards.items.length > 0 && (
+        <section className="awards-sec">
+          <div className="wrap">
+            <h3 className="awards-title">{extra.awards.title}</h3>
+            <div className="awards-row">
+              {extra.awards.items.map((a, i) => (
+                a.image ? (
+                  <div className="award" key={i}>
+                    <div className="award-img"><img src={a.image} alt={a.label || "penghargaan"} /></div>
+                    {a.label && <span className="award-label">{a.label}</span>}
+                  </div>
+                ) : null
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FOOTER */}
       <footer>
@@ -331,7 +349,7 @@ export default function Landing({ content: initialContent }: { content: Content 
         </div>
       </footer>
 
-      <a className="fab" target="_blank" rel="noopener"
+      <a className="fab" target="_blank" rel="noopener" onClick={() => trackWA("fab")}
         href={waHref("Halo hifi! Saya mau cek coverage & info paket internet.")} aria-label="Chat WhatsApp">
         <IcWAFilled /><span className="lbl">Chat kami</span>
       </a>

@@ -1,5 +1,8 @@
 import type { Content } from "./types";
 
+const AWARD_BADGE =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMjEwIiB2aWV3Qm94PSIwIDAgMTgwIDIxMCI+CjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI0Y2Q0I1QyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0QzOTIyQSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPgo8cGF0aCBkPSJNNjYgMTE4IEw1NyAxOTggTDkwIDE3NiBMMTIzIDE5OCBMMTE0IDExOCBaIiBmaWxsPSIjQ0U4QzI3Ii8+CjxjaXJjbGUgY3g9IjkwIiBjeT0iODAiIHI9IjcwIiBmaWxsPSJ1cmwoI2cpIi8+CjxjaXJjbGUgY3g9IjkwIiBjeT0iODAiIHI9IjU3IiBmaWxsPSIjRkZGREY4Ii8+CjxjaXJjbGUgY3g9IjkwIiBjeT0iODAiIHI9IjUyIiBmaWxsPSJub25lIiBzdHJva2U9IiNFN0I0NEEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iMi41IDQuNSIvPgo8cGF0aCBkPSJNOTAgNDQgbDkuNSAyMC41IDIyLjUgMi4yIC0xNi41IDE1LjMgNC44IDIyLjMgLTIwLjMgLTExLjQgLTIwLjMgMTEuNCA0LjggLTIyLjMgLTE2LjUgLTE1LjMgMjIuNSAtMi4yIHoiIGZpbGw9IiNFM0E2MkYiLz4KPGcgZmlsbD0iI0M5OEYyQiI+PGNpcmNsZSBjeD0iNjYiIGN5PSIxMTIiIHI9IjIuNiIvPjxjaXJjbGUgY3g9IjkwIiBjeT0iMTE4IiByPSIyLjYiLz48Y2lyY2xlIGN4PSIxMTQiIGN5PSIxMTIiIHI9IjIuNiIvPjwvZz4KPC9zdmc+";
+
 export const DEFAULT_CONTENT: Content = {
   hero: {
     badge: "Internet fiber & 5G untuk rumah",
@@ -23,6 +26,10 @@ export const DEFAULT_CONTENT: Content = {
   },
   extra: {
     trust: ["25+ kota", "100% fiber", "pasang gratis"],
+    heroImage: "/hero.jpg",
+    heroShowText: false,
+    heroShowWidget: false,
+    heroShowTrust: false,
     benefits: {
       eyebrow: "Kenapa hifi", title: "Cepat, stabil, dan tanpa drama", hl: "tanpa drama",
       items: [
@@ -67,6 +74,14 @@ export const DEFAULT_CONTENT: Content = {
         { title: "Kontak", links: [ { label: "WhatsApp", url: "#coverage" }, { label: "Instagram", url: "#" }, { label: "Email", url: "#" } ] },
       ],
       copyright: "© 2026 hifi. Semua hak dilindungi.",
+    },
+    awards: {
+      title: "Penghargaan",
+      items: [
+        { image: AWARD_BADGE, label: "Best Fiber to the Home 2023" },
+        { image: AWARD_BADGE, label: "Technologue Award 2023" },
+        { image: AWARD_BADGE, label: "Digital Innovation" },
+      ],
     },
   },
 };

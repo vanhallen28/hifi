@@ -271,3 +271,39 @@ footer ul a:hover{color:#fff}
 @media(max-width:380px){
   .grid-3{grid-template-columns:1fr}
 }
+
+/* ===== hero banner (image full-width + content below, centered) ===== */
+.hero-banner{padding:0;background:var(--cream);position:relative;overflow:hidden}
+.hero-banner .hero-photo{display:block;width:100%;height:auto}
+.hero-banner .hero-inner{padding:42px 0 8px}
+.hero-banner .hero-copy{max-width:680px;margin:0 auto;text-align:center}
+.hero-banner .hero-copy h1{margin:4px 0 12px}
+.hero-banner .hero-copy .lead{margin-left:auto;margin-right:auto}
+.hero-banner .cov{max-width:600px;margin:24px auto 0}
+.hero-banner .trust{justify-content:center;margin-top:20px}
+@media(max-width:860px){
+  .hero-banner .hero-inner{padding:24px 0 6px}
+  .hero-banner .cov{max-width:none}
+}
+
+/* ===== awards / penghargaan (above footer) ===== */
+.awards-sec{padding:54px 0 66px;background:var(--cream);border-top:1px solid var(--line)}
+.awards-title{text-align:center;font-size:1.5rem;font-weight:800;color:var(--char);letter-spacing:-.4px;margin:0 0 30px}
+.awards-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:26px}
+.award{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:200px}
+.award-img{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 26px;box-shadow:0 6px 20px rgba(38,32,46,.05);display:flex;align-items:center;justify-content:center;height:112px;transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;filter:grayscale(.2)}
+.award-img:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(38,32,46,.1);filter:grayscale(0)}
+.award-img img{max-height:76px;max-width:190px;width:auto;height:auto;display:block}
+.award-label{font-size:.82rem;color:var(--muted);font-weight:600;text-align:center;line-height:1.35}
+@media(max-width:600px){
+  .awards-sec{padding:42px 0 50px}
+  .awards-title{font-size:1.3rem;margin-bottom:22px}
+  .awards-row{gap:16px}
+  .award{max-width:150px}
+  .award-img{height:94px;padding:12px 16px}
+  .award-img img{max-height:62px;max-width:130px}
+  .award-label{font-size:.76rem}
+}
+
+/* ===== PPN note in package cards ===== */
+.pkg .ppn{font-size:.78rem;color:var(--muted);margin-top:8px;font-weight:500}

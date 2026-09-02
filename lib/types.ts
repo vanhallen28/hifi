@@ -14,6 +14,10 @@ export type FooterCol = { title: string; links: FooterLink[] };
 
 export type Extra = {
   trust: string[];
+  heroImage: string;
+  heroShowText: boolean;
+  heroShowWidget: boolean;
+  heroShowTrust: boolean;
   benefits: { eyebrow: string; title: string; hl: string; items: Benefit[] };
   packagesHead: { eyebrow: string; title: string; hl: string; sub: string };
   steps: { eyebrow: string; title: string; hl: string; items: Step[] };
@@ -22,6 +26,7 @@ export type Extra = {
   testimonial: { quote: string; author: string };
   cta: { title: string; sub: string };
   footer: { desc: string; cols: FooterCol[]; copyright: string };
+  awards: { title: string; items: { image: string; label: string }[] };
 };
 
 export type Content = { hero: Hero; packages: Pkg[]; settings: Settings; extra: Extra };

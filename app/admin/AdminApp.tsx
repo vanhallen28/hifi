@@ -60,6 +60,7 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
   const [miniDur, setMiniDur] = useState<1 | 6 | 12>(1);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const avatar = (email || "A").charAt(0).toUpperCase();
   const upd = (fn: (e: Extra) => void) => setExtra((prev) => { const c = structuredClone(prev); fn(c); return c; });
@@ -74,6 +75,31 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
   const delPkg = (i: number) => setPkgs((prev) => prev.filter((_, idx) => idx !== i));
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(""), 2600); };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    if (file.size > 5 * 1024 * 1024) { showToast("Ukuran gambar maksimal 5MB"); return null; }
+    try {
+      const supabase = createClient();
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `img/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+      const up = await supabase.storage.from("media").upload(path, file, { cacheControl: "3600", upsert: false });
+      if (up.error) { showToast("Upload gagal: " + up.error.message); return null; }
+      return supabase.storage.from("media").getPublicUrl(path).data.publicUrl;
+    } catch {
+      showToast("Upload gagal — pastikan bucket 'media' sudah dibuat & publik.");
+      return null;
+    }
+  };
+  const uploadHero = async (file: File) => {
+    setUploading(true);
+    const url = await uploadImage(file);
+    if (url) { upd((c) => { c.heroImage = url; }); showToast("Gambar terupload — klik Publish untuk menayangkan"); }
+    setUploading(false);
+  };
+  const uploadAward = async (i: number, file: File) => {
+    const url = await uploadImage(file);
+    if (url) { upd((c) => { c.awards.items[i].image = url; }); showToast("Logo terupload — klik Publish"); }
+  };
 
   const publish = async () => {
     setSaving(true);
@@ -193,6 +219,24 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
                       <input value={hero.cta} onChange={(e) => setHero({ ...hero, cta: e.target.value })} /></div>
                     <div className="field"><label>Trust chips (satu per baris)</label>
                       <textarea rows={3} value={extra.trust.join("\n")} onChange={(e) => upd((c) => { c.trust = e.target.value.split("\n"); })} /></div>
+                    <div className="field">
+                      <label>Gambar hero (banner)</label>
+                      {extra.heroImage ? (<img src={extra.heroImage} alt="" style={{ width: "100%", borderRadius: "12px", marginBottom: "10px", display: "block", border: "1px solid #ece3db" }} />) : null}
+                      <label className="btn btn-soft" style={{ display: "inline-flex", cursor: uploading ? "default" : "pointer" }}>
+                        {uploading ? "Mengupload…" : "⬆ Upload gambar"}
+                        <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploading}
+                          onChange={(e) => { const f = e.target.files?.[0]; e.currentTarget.value = ""; if (f) uploadHero(f); }} />
+                      </label>
+                      <div className="hint" style={{ margin: "10px 0 4px" }}>Atau tempel URL gambar:</div>
+                      <input value={extra.heroImage} onChange={(e) => upd((c) => { c.heroImage = e.target.value; })} placeholder="https://… atau /hero.jpg" />
+                    </div>
+                    <div className="hint" style={{ marginTop: "-6px", marginBottom: "8px" }}>Banner tampil full-width. Nyalakan overlay di bawah bila gambarmu polos (tanpa teks bawaan).</div>
+                    <label className="switch" style={{ display: "flex", margin: "8px 0" }}>
+                      <input type="checkbox" checked={extra.heroShowText} onChange={(e) => upd((c) => { c.heroShowText = e.target.checked; })} /><span className="track"></span>Tampilkan teks hero (judul &amp; subjudul)</label>
+                    <label className="switch" style={{ display: "flex", margin: "8px 0" }}>
+                      <input type="checkbox" checked={extra.heroShowWidget} onChange={(e) => upd((c) => { c.heroShowWidget = e.target.checked; })} /><span className="track"></span>Tampilkan widget cek coverage</label>
+                    <label className="switch" style={{ display: "flex", margin: "8px 0" }}>
+                      <input type="checkbox" checked={extra.heroShowTrust} onChange={(e) => upd((c) => { c.heroShowTrust = e.target.checked; })} /><span className="track"></span>Tampilkan trust chips</label>
                   </div>
                   <div className="preview-wrap">
                     <div className="preview-label">Live preview</div>
@@ -401,6 +445,29 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
                   <h2>Footer umum</h2>
                   <div className="field"><label>Deskripsi singkat (di bawah logo)</label><textarea rows={2} value={extra.footer.desc} onChange={(e) => upd((c) => { c.footer.desc = e.target.value; })} /></div>
                   <div className="field"><label>Copyright</label><input value={extra.footer.copyright} onChange={(e) => upd((c) => { c.footer.copyright = e.target.value; })} /></div>
+                </div>
+                <div className="box" style={{ marginBottom: "18px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h2 style={{ margin: 0 }}>Penghargaan</h2>
+                    <button className="btn btn-soft" onClick={() => upd((c) => { c.awards.items.push({ image: "", label: "Nama penghargaan" }); })}>+ Tambah</button>
+                  </div>
+                  <div className="hint">Logo penghargaan tampil di atas footer. Upload gambar atau tempel URL. Kosongkan gambar untuk menyembunyikan item.</div>
+                  <div className="field"><label>Judul bagian</label><input value={extra.awards.title} onChange={(e) => upd((c) => { c.awards.title = e.target.value; })} /></div>
+                  {extra.awards.items.map((a, i) => (
+                    <div className="pkg-edit" key={i}>
+                      {a.image ? (<img src={a.image} alt="" style={{ height: "54px", marginBottom: "8px", display: "block" }} />) : null}
+                      <label className="btn btn-soft" style={{ display: "inline-flex", cursor: "pointer", marginBottom: "8px" }}>
+                        ⬆ Upload logo
+                        <input type="file" accept="image/*" style={{ display: "none" }}
+                          onChange={(e) => { const f = e.target.files?.[0]; e.currentTarget.value = ""; if (f) uploadAward(i, f); }} />
+                      </label>
+                      <div className="two">
+                        <div><span className="price-label">URL gambar</span><input value={a.image} onChange={(e) => upd((c) => { c.awards.items[i].image = e.target.value; })} /></div>
+                        <div><span className="price-label">Label (opsional)</span><input value={a.label} onChange={(e) => upd((c) => { c.awards.items[i].label = e.target.value; })} /></div>
+                      </div>
+                      <button className="btn btn-danger" onClick={() => upd((c) => { c.awards.items.splice(i, 1); })}>Hapus</button>
+                    </div>
+                  ))}
                 </div>
                 <div className="box">
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
