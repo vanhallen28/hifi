@@ -1,46 +1,52 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Script from "next/script";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import { getContent } from "@/lib/data";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-jakarta",
+});
 
 const SITE_URL = "https://www.internetbandung.com";
 const GA_ID = "G-MGTZHHGK36";
 const FB_PIXEL_ID: string = "";   // isi Pixel ID Meta (15-16 digit). "" kalau belum ada.
 const GSC_CODE: string = "";       // isi kode verifikasi Search Console (metode HTML tag). "" kalau pakai DNS.
 
-const TITLE = "hifi — Internet rumah tanpa drama";
-const DESC = "Internet rumah fiber & 5G. Ngebut buat seisi rumah, tanpa drama. Cek coverage & langganan lewat WhatsApp.";
+const FALLBACK_TITLE = "hifi — Internet rumah tanpa drama";
+const FALLBACK_DESC = "Internet rumah fiber & 5G. Ngebut buat seisi rumah, tanpa drama. Cek coverage & langganan lewat WhatsApp.";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: TITLE,
-  description: DESC,
-  openGraph: {
-    title: TITLE,
-    description: DESC,
-    url: SITE_URL,
-    siteName: "hifi",
-    locale: "id_ID",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: TITLE,
-    description: DESC,
-  },
-  ...(GSC_CODE ? { verification: { google: GSC_CODE } } : {}),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getContent();
+  const title = content.extra.seo?.title?.trim() || FALLBACK_TITLE;
+  const description = content.extra.seo?.description?.trim() || FALLBACK_DESC;
+  return {
+    metadataBase: new URL(SITE_URL),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: SITE_URL,
+      siteName: "hifi",
+      locale: "id_ID",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+    ...(GSC_CODE ? { verification: { google: GSC_CODE } } : {}),
+  };
+}
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="id">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="id" className={jakarta.variable}>
       <body>
         {children}
 

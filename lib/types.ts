@@ -15,9 +15,13 @@ export type FooterCol = { title: string; links: FooterLink[] };
 export type Extra = {
   trust: string[];
   heroImage: string;
+  heroSlides: { image: string; page: number }[];
+  heroInterval: number;
   heroShowText: boolean;
   heroShowWidget: boolean;
   heroShowTrust: boolean;
+  widget: { label: string; placeholder: string };
+  leadForm: { title: string; sub: string; success: string };
   benefits: { eyebrow: string; title: string; hl: string; items: Benefit[] };
   packagesHead: { eyebrow: string; title: string; hl: string; sub: string };
   steps: { eyebrow: string; title: string; hl: string; items: Step[] };

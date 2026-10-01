@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Content, Pkg, Extra } from "@/lib/types";
+
+type Lead = { id: string; created_at: string; name: string; whatsapp: string; address: string; city: string; paket: string };
+
+// Normalisasi daftar gambar hero → bentuk {image,page}. Tahan format lama (string[]).
+type RawSlide = string | { image?: string; page?: number };
+function normHeroSlides(raw: unknown): { image: string; page: number }[] {
+  const arr: RawSlide[] = Array.isArray(raw) ? raw : [];
+  return arr.map((s, i) => (typeof s === "string" ? { image: s, page: i + 1 } : { image: s.image || "", page: Number(s.page) || i + 1 }));
+}
 
 /* ---------- icons ---------- */
 const IcHome = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><path d="M9 22V12h6v10" /></svg>);
@@ -20,6 +29,7 @@ const IcInfo = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const IcList = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>);
 const IcMap = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>);
 const IcCols = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="18" rx="1" /><rect x="14" y="3" width="7" height="18" rx="1" /></svg>);
+const IcUsers = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>);
 
 const rupiah = (n: number) => "Rp" + (Number(n) || 0).toLocaleString("id-ID");
 const ICON_OPTS = [
@@ -29,14 +39,15 @@ const ICON_OPTS = [
 ];
 const selStyle: React.CSSProperties = { width: "100%", padding: "11px 12px", borderRadius: "12px", border: "1.5px solid #e7ddd5", background: "#fff", font: "inherit", color: "inherit" };
 
-type Panel = "home" | "hero" | "paket" | "konten" | "coverage" | "footer" | "set";
+type Panel = "home" | "hero" | "paket" | "konten" | "coverage" | "footer" | "leads" | "set";
 const TITLES: Record<Panel, [string, string]> = {
   home: ["Ringkasan", "Selamat datang kembali, Admin."],
-  hero: ["Hero", "Bagian paling atas + trust chips."],
+  hero: ["Hero", "Slider, teks, widget & form pendaftaran."],
   paket: ["Paket & Harga", "Judul bagian + brosur paket."],
   konten: ["Konten Halaman", "Benefit, langkah, statistik, testimoni & CTA."],
   coverage: ["Coverage & Kota", "Judul coverage + daftar kota."],
   footer: ["Footer", "Deskripsi, kolom tautan & copyright."],
+  leads: ["Pendaftar / Leads", "Data pelanggan yang mengisi form."],
   set: ["Pengaturan", "Nomor WhatsApp, promo & lainnya."],
 };
 
@@ -56,7 +67,11 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
   const [wa, setWa] = useState(initial.settings.wa);
   const [promo, setPromo] = useState(initial.settings.promo);
   const [hours, setHours] = useState(initial.settings.hours);
-  const [extra, setExtra] = useState<Extra>(initial.extra);
+  const [extra, setExtra] = useState<Extra>(() => {
+    const e = structuredClone(initial.extra);
+    e.heroSlides = normHeroSlides(e.heroSlides);
+    return e;
+  });
   const [miniDur, setMiniDur] = useState<1 | 6 | 12>(1);
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
@@ -90,16 +105,39 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
       return null;
     }
   };
-  const uploadHero = async (file: File) => {
-    setUploading(true);
-    const url = await uploadImage(file);
-    if (url) { upd((c) => { c.heroImage = url; }); showToast("Gambar terupload — klik Publish untuk menayangkan"); }
-    setUploading(false);
-  };
   const uploadAward = async (i: number, file: File) => {
     const url = await uploadImage(file);
     if (url) { upd((c) => { c.awards.items[i].image = url; }); showToast("Logo terupload — klik Publish"); }
   };
+  const uploadSlide = async (file: File) => {
+    if ((extra.heroSlides || []).length >= 7) { showToast("Maksimal 7 gambar"); return; }
+    setUploading(true);
+    const url = await uploadImage(file);
+    if (url) { upd((c) => { c.heroSlides = [...(c.heroSlides || []), { image: url, page: (c.heroSlides?.length || 0) + 1 }]; }); showToast("Gambar terupload — klik Publish"); }
+    setUploading(false);
+  };
+
+  // Leads (Point 3)
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+  const loadLeads = async () => {
+    setLeadsLoading(true);
+    try {
+      const sb = createClient();
+      const { data } = await sb.from("leads").select("*").order("created_at", { ascending: false }).limit(500);
+      setLeads((data as Lead[]) || []);
+    } catch { /* tabel mungkin belum dibuat */ }
+    setLeadsLoading(false);
+  };
+  const delLead = async (id: string) => {
+    try {
+      const sb = createClient();
+      await sb.from("leads").delete().eq("id", id);
+      setLeads((prev) => prev.filter((l) => l.id !== id));
+      showToast("Data dihapus");
+    } catch { showToast("Gagal menghapus"); }
+  };
+  useEffect(() => { if (panel === "leads") loadLeads(); /* eslint-disable-next-line */ }, [panel]);
 
   const publish = async () => {
     setSaving(true);
@@ -155,6 +193,7 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
           {navItem("konten", <IcList />, "Konten Halaman")}
           {navItem("coverage", <IcMap />, "Coverage & Kota")}
           {navItem("footer", <IcCols />, "Footer")}
+          {navItem("leads", <IcUsers />, "Pendaftar")}
           {navItem("set", <IcGear />, "Pengaturan")}
           <div className="side-foot">
             <a className="nav-item" href="/" target="_blank"><IcExternal />Lihat situs</a>
@@ -220,23 +259,63 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
                     <div className="field"><label>Trust chips (satu per baris)</label>
                       <textarea rows={3} value={extra.trust.join("\n")} onChange={(e) => upd((c) => { c.trust = e.target.value.split("\n"); })} /></div>
                     <div className="field">
-                      <label>Gambar hero (banner)</label>
-                      {extra.heroImage ? (<img src={extra.heroImage} alt="" style={{ width: "100%", borderRadius: "12px", marginBottom: "10px", display: "block", border: "1px solid #ece3db" }} />) : null}
-                      <label className="btn btn-soft" style={{ display: "inline-flex", cursor: uploading ? "default" : "pointer" }}>
-                        {uploading ? "Mengupload…" : "⬆ Upload gambar"}
-                        <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploading}
-                          onChange={(e) => { const f = e.target.files?.[0]; e.currentTarget.value = ""; if (f) uploadHero(f); }} />
-                      </label>
-                      <div className="hint" style={{ margin: "10px 0 4px" }}>Atau tempel URL gambar:</div>
-                      <input value={extra.heroImage} onChange={(e) => upd((c) => { c.heroImage = e.target.value; })} placeholder="https://… atau /hero.jpg" />
+                      <label>Gambar hero — bisa beberapa (maksimal 7, geser otomatis)</label>
+                      <div className="hint" style={{ margin: "0 0 10px" }}>Isi 1 gambar untuk banner statis, atau beberapa (maks 7) untuk slider otomatis. Atur urutan tampil lewat kolom <b>Halaman</b> (mis. gambar A = 1, gambar B = 2…). Kosong = tampil 1 gambar bawaan. Ideal 2880×886 px.</div>
+                      {(extra.heroSlides || []).length > 0 && (
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center", margin: "0 0 4px", fontSize: ".78rem", color: "#a79fa9", fontWeight: 700 }}>
+                          <span style={{ width: "100px", flex: "none" }}>Preview</span>
+                          <span style={{ flex: 1 }}>URL gambar</span>
+                          <span style={{ width: "92px", flex: "none" }}>Halaman</span>
+                          <span style={{ width: "40px", flex: "none" }}></span>
+                        </div>
+                      )}
+                      {(extra.heroSlides || []).map((s, i) => (
+                        <div key={i} style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+                          <img src={s.image} alt="" style={{ width: "100px", height: "38px", objectFit: "cover", borderRadius: "8px", border: "1px solid #ece3db", flex: "none", background: "#f4ede7" }} />
+                          <input style={{ flex: 1 }} value={s.image} onChange={(e) => upd((c) => { c.heroSlides[i].image = e.target.value; })} placeholder="URL gambar" />
+                          <div style={{ flex: "none", width: "92px" }}>
+                            <input type="number" min={1} max={7} value={s.page} title="Halaman / urutan tampil"
+                              onChange={(e) => upd((c) => { c.heroSlides[i].page = parseInt(e.target.value) || 1; })} />
+                          </div>
+                          <button className="btn btn-danger" title="Hapus gambar" onClick={() => upd((c) => { c.heroSlides.splice(i, 1); })}>×</button>
+                        </div>
+                      ))}
+                      <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "4px" }}>
+                        {(extra.heroSlides || []).length < 7 ? (
+                          <>
+                            <label className="btn btn-soft" style={{ display: "inline-flex", cursor: uploading ? "default" : "pointer" }}>
+                              {uploading ? "Mengupload…" : "⬆ Upload gambar"}
+                              <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploading}
+                                onChange={(e) => { const f = e.target.files?.[0]; e.currentTarget.value = ""; if (f) uploadSlide(f); }} />
+                            </label>
+                            <button className="btn btn-soft" onClick={() => upd((c) => { c.heroSlides = [...(c.heroSlides || []), { image: "", page: (c.heroSlides?.length || 0) + 1 }]; })}>+ Tambah via URL</button>
+                          </>
+                        ) : (<div className="hint" style={{ margin: 0 }}>Maksimal 7 gambar tercapai.</div>)}
+                      </div>
                     </div>
+                    <div className="field"><label>Durasi per slide (detik)</label>
+                      <input type="number" min={2} value={extra.heroInterval} style={{ maxWidth: "140px" }}
+                        onChange={(e) => upd((c) => { c.heroInterval = parseInt(e.target.value) || 5; })} /></div>
                     <div className="hint" style={{ marginTop: "-6px", marginBottom: "8px" }}>Banner tampil full-width. Nyalakan overlay di bawah bila gambarmu polos (tanpa teks bawaan).</div>
+                    <div className="field"><label>Widget — judul (di atas kolom cari)</label>
+                      <input value={extra.widget.label} onChange={(e) => upd((c) => { c.widget.label = e.target.value; })} /></div>
+                    <div className="field"><label>Widget — placeholder kolom cari</label>
+                      <input value={extra.widget.placeholder} onChange={(e) => upd((c) => { c.widget.placeholder = e.target.value; })} /></div>
                     <label className="switch" style={{ display: "flex", margin: "8px 0" }}>
                       <input type="checkbox" checked={extra.heroShowText} onChange={(e) => upd((c) => { c.heroShowText = e.target.checked; })} /><span className="track"></span>Tampilkan teks hero (judul &amp; subjudul)</label>
                     <label className="switch" style={{ display: "flex", margin: "8px 0" }}>
                       <input type="checkbox" checked={extra.heroShowWidget} onChange={(e) => upd((c) => { c.heroShowWidget = e.target.checked; })} /><span className="track"></span>Tampilkan widget cek coverage</label>
                     <label className="switch" style={{ display: "flex", margin: "8px 0" }}>
                       <input type="checkbox" checked={extra.heroShowTrust} onChange={(e) => upd((c) => { c.heroShowTrust = e.target.checked; })} /><span className="track"></span>Tampilkan trust chips</label>
+
+                    <h2 style={{ marginTop: "22px" }}>Form pendaftaran (pop-up)</h2>
+                    <div className="hint">Muncul saat pengunjung klik tombol &quot;{hero.cta || "Cek coverage"}&quot; di widget / coverage. Data masuk ke menu <b>Pendaftar</b>.</div>
+                    <div className="field"><label>Judul form</label>
+                      <input value={extra.leadForm.title} onChange={(e) => upd((c) => { c.leadForm.title = e.target.value; })} /></div>
+                    <div className="field"><label>Subjudul form</label>
+                      <textarea rows={2} value={extra.leadForm.sub} onChange={(e) => upd((c) => { c.leadForm.sub = e.target.value; })} /></div>
+                    <div className="field"><label>Pesan sukses setelah kirim</label>
+                      <textarea rows={2} value={extra.leadForm.success} onChange={(e) => upd((c) => { c.leadForm.success = e.target.value; })} /></div>
                   </div>
                   <div className="preview-wrap">
                     <div className="preview-label">Live preview</div>
@@ -494,6 +573,41 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
                       <button className="btn btn-soft" style={{ marginTop: "10px" }} onClick={() => upd((c) => { c.footer.cols[ci].links.push({ label: "Tautan", url: "#" }); })}>+ Tambah tautan</button>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* LEADS */}
+            {panel === "leads" && (
+              <div className="panel active">
+                <div className="box">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h2 style={{ margin: 0 }}>Pendaftar / Leads ({leads.length})</h2>
+                    <button className="btn btn-soft" onClick={loadLeads} disabled={leadsLoading}>{leadsLoading ? "Memuat…" : "⟳ Muat ulang"}</button>
+                  </div>
+                  <div className="hint">Data pelanggan yang mengisi form cek coverage. Terbaru di atas.</div>
+                  {leads.length === 0 ? (
+                    <p style={{ color: "#8a8290", padding: "20px 0" }}>{leadsLoading ? "Memuat…" : "Belum ada pendaftar. Pastikan tabel 'leads' sudah dibuat (lihat SQL yang disertakan)."}</p>
+                  ) : (
+                    <div style={{ overflowX: "auto" }}>
+                      <table className="leads-tbl">
+                        <thead><tr><th>Tanggal</th><th>Nama</th><th>WhatsApp</th><th>Kota</th><th>Paket</th><th>Alamat</th><th></th></tr></thead>
+                        <tbody>
+                          {leads.map((l) => (
+                            <tr key={l.id}>
+                              <td style={{ whiteSpace: "nowrap" }}>{new Date(l.created_at).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" })}</td>
+                              <td>{l.name}</td>
+                              <td style={{ whiteSpace: "nowrap" }}><a href={`https://wa.me/${(l.whatsapp || "").replace(/[^0-9]/g, "").replace(/^0/, "62")}`} target="_blank" rel="noopener">{l.whatsapp}</a></td>
+                              <td>{l.city}</td>
+                              <td>{l.paket}</td>
+                              <td style={{ maxWidth: "220px" }}>{l.address}</td>
+                              <td><button className="btn btn-danger" onClick={() => delLead(l.id)}>Hapus</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

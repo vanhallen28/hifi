@@ -27,9 +27,17 @@ export const DEFAULT_CONTENT: Content = {
   extra: {
     trust: ["25+ kota", "100% fiber", "pasang gratis"],
     heroImage: "/hero.jpg",
+    heroSlides: [],
+    heroInterval: 5,
     heroShowText: false,
     heroShowWidget: false,
     heroShowTrust: false,
+    widget: { label: "Cek dulu — area kamu ke-cover?", placeholder: "Ketik kota / alamat kamu…" },
+    leadForm: {
+      title: "Cek coverage & daftar",
+      sub: "Isi data kamu, tim kami langsung bantu cek ketersediaan area & proses pemasangan.",
+      success: "Terima kasih! Data kamu sudah masuk. Tim kami akan segera menghubungi via WhatsApp.",
+    },
     benefits: {
       eyebrow: "Kenapa hifi", title: "Cepat, stabil, dan tanpa drama", hl: "tanpa drama",
       items: [
@@ -37,6 +45,8 @@ export const DEFAULT_CONTENT: Content = {
         { icon: "wifi", title: "Fiber sampai rumah", desc: "Jaringan 100% fiber optic — latency rendah, cocok buat gaming & kerja." },
         { icon: "shield", title: "Pasang gratis", desc: "Instalasi & router Wi-Fi 6 sudah termasuk. Tinggal colok, langsung ngebut." },
         { icon: "headset", title: "Support 24/7", desc: "Ada kendala? Chat WhatsApp kami kapan aja, dibantu tim yang ramah." },
+        { icon: "check", title: "Harga transparan", desc: "Tanpa biaya tersembunyi. Yang kamu lihat, itu yang kamu bayar." },
+        { icon: "star", title: "Cepat aktif", desc: "Proses pemasangan gesit — bisa aktif di hari yang sama setelah data lengkap." },
       ],
     },
     packagesHead: { eyebrow: "Pilih paket", title: "Satu harga, semua ngebut", hl: "ngebut", sub: "Makin lama durasi, makin hemat per bulannya." },

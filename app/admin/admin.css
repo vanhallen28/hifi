@@ -141,3 +141,11 @@ a{color:inherit;text-decoration:none}
   .editor{grid-template-columns:1fr}
   .preview-wrap{position:static}
 }
+
+/* ===== Leads table ===== */
+.leads-tbl{width:100%;border-collapse:collapse;margin-top:14px;font-size:.9rem}
+.leads-tbl th,.leads-tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid #efe4dc;vertical-align:top}
+.leads-tbl th{font-weight:700;color:#6b6473;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+.leads-tbl tbody tr:hover,.leads-tbl tr:hover{background:#faf6f2}
+.leads-tbl a{color:#0C7A50;font-weight:600;text-decoration:none}
+.leads-tbl .btn-danger{padding:6px 12px;font-size:.82rem}

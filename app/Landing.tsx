@@ -22,6 +22,18 @@ const ICONS: { [k: string]: () => JSX.Element } = { zap: IcZap, wifi: IcWifi, sh
 const rupiah = (n: number) => "Rp" + (Number(n) || 0).toLocaleString("id-ID");
 const isExt = (u: string) => /^https?:/i.test(u || "");
 
+// Normalisasi daftar gambar hero → urutkan berdasarkan "page", kembalikan URL terurut.
+// Tahan format lama (string[]) maupun baru ({image,page}[]).
+type RawSlide = string | { image?: string; page?: number };
+function heroImages(raw: unknown, fallback: string): string[] {
+  const arr: RawSlide[] = Array.isArray(raw) ? raw : [];
+  const norm = arr
+    .map((s, i) => (typeof s === "string" ? { image: s, page: i + 1 } : { image: s.image || "", page: Number(s.page) || i + 1 }))
+    .filter((s) => s.image);
+  norm.sort((a, b) => a.page - b.page);
+  return norm.length ? norm.map((s) => s.image) : [fallback];
+}
+
 function splitHl(text: string, hl: string) {
   const t = text || ""; const k = (hl || "").trim();
   if (!k) return [t, "", ""] as const;
@@ -70,6 +82,47 @@ export default function Landing({ content: initialContent }: { content: Content 
   const [city, setCity] = useState("");
   const [dur, setDur] = useState<1 | 6 | 12>(1);
 
+  // Hero slider — urut berdasarkan "page", auto-slide
+  const slides = heroImages(extra.heroSlides, extra.heroImage || "/hero.jpg");
+  const [slide, setSlide] = useState(0);
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const ms = Math.max(2, extra.heroInterval || 5) * 1000;
+    const t = setInterval(() => setSlide((s) => (s + 1) % slides.length), ms);
+    return () => clearInterval(t);
+  }, [slides.length, extra.heroInterval]);
+  useEffect(() => { if (slide >= slides.length) setSlide(0); }, [slides.length, slide]);
+
+  // Form pendaftaran / cek coverage (Point 3)
+  const [formOpen, setFormOpen] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [form, setForm] = useState({ name: "", wa: "", address: "", city: "", pkg: "" });
+  const openForm = (prefillCity?: string) => {
+    setForm((f) => ({ ...f, city: prefillCity || f.city }));
+    setSent(false);
+    setFormOpen(true);
+  };
+  const submitForm = async () => {
+    if (!form.name.trim() || !form.wa.trim()) return;
+    setSending(true);
+    try {
+      const sb = createClient();
+      await sb.from("leads").insert({
+        name: form.name.trim(), whatsapp: form.wa.trim(),
+        address: form.address.trim(), city: form.city.trim(), paket: form.pkg.trim(),
+      });
+    } catch { /* kalau DB gagal, tetap lanjut ke WhatsApp */ }
+    trackWA("form-submit");
+    const summary =
+      `Halo hifi! Saya mau berlangganan / cek coverage.\n` +
+      `Nama: ${form.name}\nWhatsApp: ${form.wa}\n` +
+      `Alamat: ${form.address || "-"}\nKota: ${form.city || "-"}\nPaket: ${form.pkg || "-"}`;
+    window.open(waHref(summary), "_blank");
+    setSending(false);
+    setSent(true);
+  };
+
   // Lacak klik WhatsApp sebagai konversi (Google Analytics + Meta Pixel)
   const trackWA = (source: string) => {
     try {
@@ -77,23 +130,6 @@ export default function Landing({ content: initialContent }: { content: Content 
       if (w.gtag) w.gtag("event", "generate_lead", { method: "whatsapp", source });
       if (w.fbq) w.fbq("track", "Lead", { source });
     } catch { /* abaikan */ }
-  };
-
-  const cekCoverage = () => {
-    trackWA("hero-widget");
-    const v = cov.trim();
-    const msg = v
-      ? `Halo hifi! Saya mau cek coverage untuk: ${v}. Bisa dibantu?`
-      : "Halo hifi! Saya mau cek ketersediaan area & info berlangganan.";
-    window.open(waHref(msg), "_blank");
-  };
-  const cekKota = (val: string) => {
-    trackWA("coverage");
-    const v = (val || "").trim();
-    const msg = v
-      ? `Halo hifi! Saya mau cek coverage di ${v}. Sudah tersedia?`
-      : "Halo hifi! Saya mau cek ketersediaan area.";
-    window.open(waHref(msg), "_blank");
   };
 
   return (
@@ -145,7 +181,20 @@ export default function Landing({ content: initialContent }: { content: Content 
 
       {/* HERO */}
       <section className={"hero hero-banner" + (heroOverlay ? " has-overlay" : "")}>
-        <img className="hero-photo" src={extra.heroImage || "/hero.jpg"} alt="" />
+        <div className="hero-slider">
+          <div className="hero-track" style={{ transform: `translateX(-${slide * 100}%)` }}>
+            {slides.map((src, i) => (<img className="hero-photo" key={i} src={src} alt="" />))}
+          </div>
+          {slides.length > 1 && (
+            <>
+              <button className="hero-arrow left" onClick={() => setSlide((s) => (s - 1 + slides.length) % slides.length)} aria-label="Slide sebelumnya">‹</button>
+              <button className="hero-arrow right" onClick={() => setSlide((s) => (s + 1) % slides.length)} aria-label="Slide berikutnya">›</button>
+              <div className="hero-dots">
+                {slides.map((_, i) => (<button key={i} className={"hero-dot" + (i === slide ? " on" : "")} onClick={() => setSlide(i)} aria-label={`Slide ${i + 1}`} />))}
+              </div>
+            </>
+          )}
+        </div>
         {heroOverlay && (
           <div className="wrap hero-inner">
             <div className="hero-copy">
@@ -158,15 +207,15 @@ export default function Landing({ content: initialContent }: { content: Content 
               )}
               {extra.heroShowWidget && (
                 <div className="cov">
-                  <label>Cek dulu — area kamu ke-cover?</label>
+                  <label>{extra.widget.label}</label>
                   <div className="cov-row">
                     <div className="cov-input">
                       <IcPin />
-                      <input type="text" placeholder="Ketik kota / alamat kamu…" value={cov}
+                      <input type="text" placeholder={extra.widget.placeholder} value={cov}
                         onChange={(e) => setCov(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") cekCoverage(); }} />
+                        onKeyDown={(e) => { if (e.key === "Enter") openForm(cov); }} />
                     </div>
-                    <button className="btn btn-primary" onClick={cekCoverage}>{hero.cta}</button>
+                    <button className="btn btn-primary" onClick={() => openForm(cov)}>{hero.cta}</button>
                   </div>
                 </div>
               )}
@@ -264,12 +313,12 @@ export default function Landing({ content: initialContent }: { content: Content 
               <IcSearch />
               <input type="text" placeholder="Cari kota kamu…" value={city}
                 onChange={(e) => setCity(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") cekKota(city); }} />
+                onKeyDown={(e) => { if (e.key === "Enter") openForm(city); }} />
             </div>
-            <button className="btn btn-primary" onClick={() => cekKota(city)}>Cek</button>
+            <button className="btn btn-primary" onClick={() => openForm(city)}>Cek</button>
           </div>
           <div className="cities">
-            {extra.coverage.cities.map((c) => (<button className="city" key={c} onClick={() => cekKota(c)}>{c}</button>))}
+            {extra.coverage.cities.map((c) => (<button className="city" key={c} onClick={() => openForm(c)}>{c}</button>))}
           </div>
           <p className="cov-note">{extra.coverage.note} <a target="_blank" rel="noopener" onClick={() => trackWA("coverage-note")}
             href={waHref("Halo hifi! Kota saya belum ada di daftar coverage. Boleh info kalau sudah tersedia?")}>Chat kami, nanti dikabari</a></p>
@@ -353,6 +402,50 @@ export default function Landing({ content: initialContent }: { content: Content 
         href={waHref("Halo hifi! Saya mau cek coverage & info paket internet.")} aria-label="Chat WhatsApp">
         <IcWAFilled /><span className="lbl">Chat kami</span>
       </a>
+
+      {/* FORM PENDAFTARAN / CEK COVERAGE */}
+      {formOpen && (
+        <div className="modal-ov" onClick={() => setFormOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-x" onClick={() => setFormOpen(false)} aria-label="tutup">×</button>
+            {sent ? (
+              <div className="form-done">
+                <div className="fd-ic"><IcCheck /></div>
+                <h3>Berhasil terkirim!</h3>
+                <p>{extra.leadForm.success}</p>
+                <button className="btn btn-primary" onClick={() => setFormOpen(false)}>Tutup</button>
+              </div>
+            ) : (
+              <>
+                <h3 className="modal-title">{extra.leadForm.title}</h3>
+                <p className="modal-sub">{extra.leadForm.sub}</p>
+                <div className="ff"><label>Nama lengkap *</label>
+                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nama kamu" /></div>
+                <div className="ff"><label>Nomor WhatsApp *</label>
+                  <input value={form.wa} onChange={(e) => setForm({ ...form, wa: e.target.value })} placeholder="08xxxxxxxxxx" inputMode="tel" /></div>
+                <div className="ff"><label>Alamat pemasangan</label>
+                  <textarea rows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Alamat lengkap rumah" /></div>
+                <div className="ff-row">
+                  <div className="ff"><label>Kota</label>
+                    <input list="kota-list" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Kota" />
+                    <datalist id="kota-list">{extra.coverage.cities.map((c) => (<option key={c} value={c} />))}</datalist>
+                  </div>
+                  <div className="ff"><label>Paket diminati</label>
+                    <select value={form.pkg} onChange={(e) => setForm({ ...form, pkg: e.target.value })}>
+                      <option value="">— pilih —</option>
+                      {packages.map((p) => (<option key={p.name} value={`${p.name} (${p.speed})`}>{p.name} — {p.speed}</option>))}
+                    </select>
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-lg form-submit" disabled={sending || !form.name.trim() || !form.wa.trim()} onClick={submitForm}>
+                  {sending ? "Mengirim…" : "Kirim & lanjut WhatsApp"}
+                </button>
+                <p className="form-note">Dengan mengirim, kamu setuju dihubungi tim kami via WhatsApp.</p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
