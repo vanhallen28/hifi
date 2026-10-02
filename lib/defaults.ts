@@ -38,6 +38,10 @@ export const DEFAULT_CONTENT: Content = {
       sub: "Isi data kamu, tim kami langsung bantu cek ketersediaan area & proses pemasangan.",
       success: "Terima kasih! Data kamu sudah masuk. Tim kami akan segera menghubungi via WhatsApp.",
     },
+    seo: {
+      title: "hifi — Internet rumah tanpa drama",
+      description: "Internet rumah fiber & 5G. Ngebut buat seisi rumah, tanpa drama. Cek coverage & langganan lewat WhatsApp.",
+    },
     benefits: {
       eyebrow: "Kenapa hifi", title: "Cepat, stabil, dan tanpa drama", hl: "tanpa drama",
       items: [

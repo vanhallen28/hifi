@@ -628,6 +628,17 @@ export default function AdminApp({ initial, email }: { initial: Content; email: 
                     {saving ? "Menyimpan…" : "Simpan pengaturan"}
                   </button>
                 </div>
+                <div className="box" style={{ maxWidth: "560px", marginTop: "18px" }}>
+                  <h2>SEO (tampilan di Google &amp; social)</h2>
+                  <div className="hint">Judul jadi teks tab browser &amp; judul hasil Google. Deskripsi jadi ringkasan di bawahnya. Kosongkan untuk pakai bawaan.</div>
+                  <div className="field"><label>Judul SEO (idealnya ≤ 60 karakter)</label>
+                    <input value={extra.seo.title} onChange={(e) => upd((c) => { c.seo.title = e.target.value; })} /></div>
+                  <div className="field"><label>Deskripsi SEO (idealnya ≤ 160 karakter)</label>
+                    <textarea rows={3} value={extra.seo.description} onChange={(e) => upd((c) => { c.seo.description = e.target.value; })} /></div>
+                  <button className="btn btn-primary" onClick={publish} disabled={saving}>
+                    {saving ? "Menyimpan…" : "Simpan SEO"}
+                  </button>
+                </div>
               </div>
             )}
           </div>
